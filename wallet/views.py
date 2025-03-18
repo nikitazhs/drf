@@ -7,8 +7,11 @@ from rest_framework_json_api.pagination import JsonApiPageNumberPagination
 from django.db.models import Sum
 from .models import Wallet, Transaction
 from .serializers import WalletSerializer, TransactionSerializer
-from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+
 
 class WalletViewSet(ModelViewSet):
     queryset = Wallet.objects.annotate(
@@ -23,13 +26,13 @@ class WalletViewSet(ModelViewSet):
     ordering_fields = ['balance', 'label']
     search_fields = ['label']
 
-    @action(detail=True, methods=['get'])
-    def transactions(self, request, pk=None):
-        wallet = self.get_object()
-        qs = wallet.transactions.all().order_by('id')
-        self.pagination_class = None
-        serializer = TransactionSerializer(qs, many=True, context={'request': request})
-        return Response({"data": serializer.data})
+
+class WalletTransactionsAPIView(APIView):
+    def get(self, request, pk, format=None):
+        wallet = get_object_or_404(Wallet, pk=pk)
+        transactions = wallet.transactions.all().order_by('id')
+        serializer = TransactionSerializer(transactions, many=True, context={'request': request})
+        return Response({"data": serializer.data}, status=status.HTTP_200_OK)
 
 
 class TransactionViewSet(ModelViewSet):

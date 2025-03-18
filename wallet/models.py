@@ -1,12 +1,13 @@
 from decimal import Decimal
 from django.db import models
 from django.db.models import Sum
+from django.core.exceptions import ValidationError
 
 class WalletError(Exception):
     pass
 
 class Wallet(models.Model):
-    label = models.CharField(max_length=255, db_index=True)  # Можно добавить индекс
+    label = models.CharField(max_length=255, db_index=True)
     balance = models.DecimalField(max_digits=18, decimal_places=2, default=Decimal('0.00'))
 
 
@@ -25,7 +26,6 @@ class Transaction(models.Model):
     amount = models.DecimalField(max_digits=18, decimal_places=2, db_index=True)
 
     def clean(self):
-        from django.core.exceptions import ValidationError
         current_total = self.wallet.transactions.aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
         new_balance = current_total + self.amount
         if new_balance < Decimal('0.00'):
