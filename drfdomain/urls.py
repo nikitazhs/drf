@@ -20,11 +20,7 @@ from django.urls import path, include
 from django.http import HttpResponse
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/v1/', include('wallet.api_urls')),
-    path('health/', lambda request: HttpResponse("OK", content_type="text/plain")),
+    path("admin/", admin.site.urls),
+    path("api/v1/", include("wallet.api_urls")),
+    path("health/", lambda request: HttpResponse("OK", content_type="text/plain")),
 ]
-
-
-
-
